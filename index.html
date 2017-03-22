@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Alexa App</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Bootstrap JS  -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!-- Angular JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <!-- Actual app code -->
+    <script>
+    var app = angular.module("myApp", []);
+    app.controller("myCtrl", function($scope) {
+      $scope.processedRecords = function(arr) {
+        //$scope.initialRecords
+        return arr.map(function(event, indexNum, arr) {
+          event.isStartTimeAM = /am/i.test(event.startTime);
+          event.isEndTimeAM = /am/i.test(event.endTime);
+
+          event.calcedStyles = "width: 50%; height: 191px;";
+          event.hasLocation = !!event.location;
+
+          return event;
+        });
+      };
+      $scope.uploadJSON = function() {
+        var arrayOfEvents = JSON.parse($scope.jsonInput).allEvents;
+        $scope.recordsToRepeat = $scope.processedRecords(arrayOfEvents);
+        $scope.jsonInput = '';
+      };
+      $scope.initialRecordsData =  [
+        {
+          eventTitle: "Alfreds Futterkiste",
+          description: "There was Eru, the One, who in Arda is called Ilúvatar; and he made first the Ainur, the Holy Ones, that were the offspring of his thought, and they were with him before aught else was made. And he spoke to them, propounding to them themes of music; and they sang before him, and he was glad.",
+          startTime: "11:30am",
+          endTime: "2:00pm",
+          location: 'Gym'
+        },
+        {
+          eventTitle: "Alfreds Futterkiste",
+          description: "There was Eru, the One, who in Arda is called Ilúvatar; and he made first the Ainur, the Holy Ones, that were the offspring of his thought, and they were with him before aught else was made. And he spoke to them, propounding to them themes of music; and they sang before him, and he was glad.",
+          startTime: "11:45am",
+          endTime: "1:00pm"
+        },
+        {
+          eventTitle: "Call Prince",
+          description: "There was Eru, the One, who in Arda is called Ilúvatar; and he made first the Ainur, the Holy Ones, that were the offspring of his thought, and they were with him before aught else was made. And he spoke to them, propounding to them themes of music; and they sang before him, and he was glad.",
+          startTime: "12:00pm",
+          endTime: "12:15pm"
+        },
+        {
+          eventTitle: "Berglunds snabbköp",
+          description: "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole, filled with the ends of worms and an oozy smell, nor yet a dry, bare, sandy hole with nothing in it to sit down on or to eat: it was a hobbit-hole, and that means comfort.",
+          startTime: "1:15pm",
+          endTime: "2:13pm"
+        },
+        {
+          eventTitle: "Centro comercial Moctezuma",
+          description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec fringilla turpis nec consectetur vestibulum. Duis ipsum enim, sagittis nec lorem in, blandit sodales ex. Aliquam finibus bibendum scelerisque. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Maecenas luctus lorem eu laoreet pellentesque. Aenean et feugiat nulla. Sed a elit consequat, ornare erat a, tincidunt lacus. Donec mattis mauris sem, mattis lacinia massa ornare vitae. Donec convallis, felis eget sagittis molestie, tortor nulla volutpat purus, sit amet aliquam neque velit eu ipsum. Nullam quis vulputate ipsum. In suscipit felis mauris, vitae sodales arcu mattis in. Vestibulum eu varius mi, at scelerisque nulla. Nam rutrum velit tempor, vulputate eros quis, facilisis diam. Fusce commodo aliquam sollicitudin. Etiam sed nisi malesuada, volutpat arcu ut, tincidunt neque.",
+          startTime: "3:45pm",
+          endTime: "5:01pm"
+        },
+        {
+          eventTitle: "Ernst Handel",
+          description: "When the Valar entered into Eä they were at first astounded and at a loss, for it was as if naught was yet made which they had seen in vision, and all was but on point to begin and yet unshaped, and it was dark. For the Great Music had been but the growth and flowering of thought in the Tuneless Halls, and the Vision only a foreshowing; but now they had entered in at the beginning of Time, and the Valar perceived that the World had been but foreshadowed and foresung, and they must achieve it. So began their great labours in wastes unmeasured and unexplored, and in ages uncounted and forgotten, until in the Deeps of Time and in the midst of the vast halls of Eä there came to be that hour and that place where was made the habitation of the Children of Ilúvatar.",
+          startTime: "9:00pm",
+          endTime: "10:00pm"
+        },
+      ];
+      $scope.recordsToRepeat = $scope.processedRecords($scope.initialRecordsData);
+
+      $scope.jsonInput = '';
+    });
+    </script>
+
+    <style>
+      .am-time {
+        color: #f0ad4e;
+      }
+      .pm-time {
+        color: #003366;
+      }
+      /* The Elipsis description truncation bit */
+      .module {
+        /*width: 250px;*/
+        /*margin: 0 0 1em 0;*/
+        overflow: hidden;
+      }
+      .module p {
+        margin: 0;
+      }
+      .line-clamp {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      /* ! Elipsis */
+
+      div.panel-heading h1.panel-title {
+        font-size: 24px;
+      }
+      span.required-attr {
+        color: red;
+        font-weight: 700;
+      }
+      span.optional-attr {
+        color: blue;
+        font-weight: 700;
+      }
+      span.string-attr {
+        color: green;
+        font-weight: 700;
+      }
+      h1.title,
+      h2.title,
+      h4.title {
+        color: black!important;
+      }
+      textarea {
+        color: black;
+        font-weight: 400;
+      }
+      .location-padding {
+        margin-top: 35px;
+      }
+      .app-container {
+        margin-top: 80px;
+        margin-bottom: 70px;
+      }
+      .json-textarea {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <!-- Hamburger -->
+          <!-- <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button> -->
+          <a class="navbar-brand" href="#">Daytime Scheduler</a>
+        </div>
+
+        <div id="navbar" class="navbar-collapse collapse">
+          <!-- <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Separated link</a></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul>
+            </li>
+          </ul> -->
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+
+    <div ng-app="myApp" ng-controller="myCtrl" class="container app-container">
+      <div class="row">
+        <div class="col-xs-4">
+          <h1>API<br />Documentation</h1>
+          <span class="required-attr">Required Attribute Key</span><br />
+          <span class="optional-attr">Optional Attribute Key</span><br />
+          <span class="string-attr">Type of Attribute Value: String</span><br />
+          <h4 class="title">NOTE: All JSON keys must be input as strings<br />(i.e. have quotes surrounding them)</h4><br />
+
+            <pre>
+              <code>
+{
+  <span class="required-attr">"allEvents"</span>: [{
+    <span class="required-attr">"eventTitle"</span>: <span class="string-attr">"Go Running Handel"</span>,
+    <span class="required-attr">"description"</span>: <span class="string-attr">"I will go run"</span>,
+    <span class="required-attr">"startTime"</span>: <span class="string-attr">"9:00pm"</span>,
+    <span class="required-attr">"endTime"</span>: <span class="string-attr">"10:00pm"</span>,
+    <span class="optional-attr">"location"</span>: <span class="string-attr">"Gym"</span>
+  }]
+}
+              </code>
+            </pre>
+          <h1 class="title">JSON Input:</h1>
+          <textarea rows="10" ng-model="jsonInput" placeholder="Enter JSON here..." class="json-textarea">
+          </textarea>
+          <!-- <h2 class="title">Hello {{ jsonInput }}</h2> -->
+          <button ng-click="uploadJSON()" type="button" class="btn btn-lg btn-warning">Upload JSON!</button>
+        </div>
+        <div class="col-xs-8">
+
+          <div
+            ng-repeat="event in recordsToRepeat | orderBy:'startTime'"
+            class="panel panel-primary"
+            style="{{ event.calcedStyles }}">
+            <div class="panel-heading">
+              <h1 class="panel-title">{{ event.eventTitle }}</h1>
+            </div>
+            <div class="panel-body">
+              <h5 ng-if="event.location">
+                <u>Location:</u> {{ event.location }}
+              </h5>
+              <div class="module line-clamp">
+                <p>{{ event.description }}</p>
+              </div>
+              <h4 ng-class="{
+                true: '',
+                false: 'location-padding'
+              } [ event.hasLocation ]">
+                <span ng-class="{
+                  true: 'am-time',
+                  false: 'pm-time'
+                } [ event.isStartTimeAM ]">
+                  {{
+                    event.startTime
+                  }}
+                </span>
+                -
+                <span ng-class="{
+                  true: 'am-time',
+                  false: 'pm-time'
+                } [ event.isEndTimeAM ]">
+                  {{
+                    event.endTime
+                  }}
+                </span>
+              </h4>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
