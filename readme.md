@@ -8,4 +8,6 @@ This is a little Angular app to demonstraight a way to parse JSON and display ca
 
 2. `npm install`
 
-3. You're done!
+3. `cp node_modules/moment/min/moment.min.js .`
+
+4. You're done!

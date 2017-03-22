@@ -10,13 +10,13 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <!-- Angular JS -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
-    <script src="./node_modules/moment/min/moment.min.js"></script>
+    <!-- Moment JS -->
+    <script src="./moment.min.js"></script>
     <!-- Actual app code -->
     <script>
     var app = angular.module("myApp", []);
     app.controller("myCtrl", function($scope) {
       $scope.processedRecords = function(arr) {
-        //$scope.initialRecords
         return arr.map(function(event, indexNum, originalArr) {
           event.isStartTimeAM = /am/i.test(event.startTime);
           event.isEndTimeAM = /am/i.test(event.endTime);
@@ -27,9 +27,10 @@
           numEventsStarting_Before_AndEnding_DuringOrAfter = 0,
           numEventsStarting_SameTime_AndEnding_DuringOrAfter = 0,
           numEventsStarting_During_AndEnding_DuringOrAfter = 0,
-          arrEventsStarting_After_AndEnding_After = 0,
+          numEventsStarting_After_AndEnding_After = 0,
           beginningTime = moment(event.startTime, 'h:mma'),
-          endTime = moment(event.endTime, 'h:mma');
+          endTime = moment(event.endTime, 'h:mma'),
+          startingSameTime_And_AddToLeftSpacing = 0;
 
           originalArr.forEach(function(individualEvent, eventIndex) {
             if (event.eventTitle !== individualEvent.eventTitle) { // Don't test this one against itself
@@ -39,37 +40,26 @@
               beginsAndEndsAfter = individualEventBeginningTime.isAfter(endTime),
               beginsBeforeEndsDuringOrAfter = individualEventBeginningTime.isBefore(beginningTime) && individualEventEndTime.isAfter(beginningTime),
               beginsSameTime = individualEventBeginningTime.isSame(beginningTime),
-              beginsDuring = individualEventBeginningTime.isAfter(beginningTime) && individualEventBeginningTime.isBefore(endTime),
-
-              individualEvent.dataIndex = eventIndex,
-              startingSameTime_And_AddToLeftSpacing = 0;
+              beginsDuring = individualEventBeginningTime.isAfter(beginningTime) && individualEventBeginningTime.isBefore(endTime);
+              individualEvent.dataIndex = eventIndex;
 
               if (beginsAndEndsBefore) {
                 numEventsStarting_Before_AndEnding_Before++;
-                // detemine (c) spacing from top (1 * 191 + px)
               } else if (beginsAndEndsAfter) {
-                arrEventsStarting_After_AndEnding_After++;
-                // ignore these
+                numEventsStarting_After_AndEnding_After++;
               } else if (beginsBeforeEndsDuringOrAfter) {
                 numEventsStarting_Before_AndEnding_DuringOrAfter++;
-                // (a) SPACING from left [3+1]
-                // (b) WIDTH [100/ 3 + 1 (+ 1 self)] = num%
-                // (c) spacing from top (half spacing) ((3 *  191)/2) + 191 (see above c)
               } else if (beginsSameTime) {
                 numEventsStarting_SameTime_AndEnding_DuringOrAfter++;
                 if (individualEvent.dataIndex < indexNum) {
                   startingSameTime_And_AddToLeftSpacing++;
                 }
-                // (b) WIDTH
-                // (a) SPACING FROM LEFT - if index is less than current index
               } else if (beginsDuring) {
                 numEventsStarting_During_AndEnding_DuringOrAfter++;
-                // (b) WIDTH
               }
             }
-          }); // arrays are built - do some calculations!!!
+          });
 
-          // Calc Spacing from top
           var heightNumEventsBefore = (numEventsStarting_Before_AndEnding_Before * 191),
           eventsToLeftNum = ((numEventsStarting_Before_AndEnding_DuringOrAfter * 191)/2),
           eventsToLeftNum = eventsToLeftNum ? eventsToLeftNum : 0 ,
