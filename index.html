@@ -10,18 +10,133 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <!-- Angular JS -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script src="./node_modules/moment/min/moment.min.js"></script>
     <!-- Actual app code -->
     <script>
     var app = angular.module("myApp", []);
     app.controller("myCtrl", function($scope) {
       $scope.processedRecords = function(arr) {
         //$scope.initialRecords
-        return arr.map(function(event, indexNum, arr) {
+        return arr.map(function(event, indexNum, originalArr) {
           event.isStartTimeAM = /am/i.test(event.startTime);
           event.isEndTimeAM = /am/i.test(event.endTime);
-
-          event.calcedStyles = "width: 50%; height: 191px;";
           event.hasLocation = !!event.location;
+          event.calcedStyles = "height: 191px; position: absolute;";
+
+          var numEventsStarting_Before_AndEnding_Before = 0,
+          numEventsStarting_Before_AndEnding_DuringOrAfter = 0,
+          numEventsStarting_SameTime_AndEnding_DuringOrAfter = 0,
+          numEventsStarting_During_AndEnding_DuringOrAfter = 0,
+          arrEventsStarting_After_AndEnding_After = 0,
+          beginningTime = moment(event.startTime, 'h:mma'),
+          endTime = moment(event.endTime, 'h:mma');
+
+          originalArr.forEach(function(individualEvent, eventIndex) {
+            if (event.eventTitle !== individualEvent.eventTitle) { // Don't test this one against itself
+              var individualEventBeginningTime = moment(individualEvent.startTime, 'h:mma'),
+              individualEventEndTime = moment(individualEvent.endTime, 'h:mma'),
+              beginsAndEndsBefore = individualEventBeginningTime.isBefore(beginningTime) && individualEventEndTime.isBefore(beginningTime),
+              beginsAndEndsAfter = individualEventBeginningTime.isAfter(endTime),
+              beginsBeforeEndsDuringOrAfter = individualEventBeginningTime.isBefore(beginningTime) && individualEventEndTime.isAfter(beginningTime),
+              beginsSameTime = individualEventBeginningTime.isSame(beginningTime),
+              beginsDuring = individualEventBeginningTime.isAfter(beginningTime) && individualEventBeginningTime.isBefore(endTime),
+
+              individualEvent.dataIndex = eventIndex,
+              startingSameTime_And_AddToLeftSpacing = 0;
+
+              if (beginsAndEndsBefore) {
+                numEventsStarting_Before_AndEnding_Before++;
+                // detemine (c) spacing from top (1 * 191 + px)
+              } else if (beginsAndEndsAfter) {
+                arrEventsStarting_After_AndEnding_After++;
+                // ignore these
+              } else if (beginsBeforeEndsDuringOrAfter) {
+                numEventsStarting_Before_AndEnding_DuringOrAfter++;
+                // (a) SPACING from left [3+1]
+                // (b) WIDTH [100/ 3 + 1 (+ 1 self)] = num%
+                // (c) spacing from top (half spacing) ((3 *  191)/2) + 191 (see above c)
+              } else if (beginsSameTime) {
+                numEventsStarting_SameTime_AndEnding_DuringOrAfter++;
+                if (individualEvent.dataIndex < indexNum) {
+                  startingSameTime_And_AddToLeftSpacing++;
+                }
+                // (b) WIDTH
+                // (a) SPACING FROM LEFT - if index is less than current index
+              } else if (beginsDuring) {
+                numEventsStarting_During_AndEnding_DuringOrAfter++;
+                // (b) WIDTH
+              }
+            }
+          }); // arrays are built - do some calculations!!!
+
+
+
+          // Calc Spacing from top
+          var heightNumEventsBefore = (numEventsStarting_Before_AndEnding_Before * 191),
+          eventsToLeftNum = ((numEventsStarting_Before_AndEnding_DuringOrAfter * 191)/2),
+          eventsToLeftNum = eventsToLeftNum ? eventsToLeftNum : 0 ,
+          spacingFromTopStrWithPx = (heightNumEventsBefore + eventsToLeftNum + 'px; '),
+          topSpacing = " margin-top: " + spacingFromTopStrWithPx;
+
+          // Calculate Width %
+          var numEventsToSpaceHorizontally = numEventsStarting_Before_AndEnding_DuringOrAfter + numEventsStarting_SameTime_AndEnding_DuringOrAfter + numEventsStarting_During_AndEnding_DuringOrAfter +
+          1, // self must be taken into account when calculating Width%
+          widthStrPercent = (100 / numEventsToSpaceHorizontally).toString() + "%; ",
+          widthSpacing = " width: " + widthStrPercent;
+
+          // Calculate Margin Left %
+          var numEventsToSpaceHorizontallyForMargin = numEventsStarting_Before_AndEnding_DuringOrAfter + numEventsStarting_SameTime_AndEnding_DuringOrAfter + numEventsStarting_During_AndEnding_DuringOrAfter +
+          1, // self must be taken into account when calculating MarginLeft%
+          percentageWidthOfEachEventAsInt = (100 / numEventsToSpaceHorizontally),
+          eventsToLeft = numEventsStarting_Before_AndEnding_DuringOrAfter + startingSameTime_And_AddToLeftSpacing,
+          percentMarginLeftSpacingAsInt = percentageWidthOfEachEventAsInt * eventsToLeft,
+          marginLeftSpacing = " margin-left: " + percentMarginLeftSpacingAsInt.toString() + "%; ";
+
+          // add calcualtions to style tag
+          event.calcedStyles += (topSpacing + widthSpacing + marginLeftSpacing);
+
+
+
+
+
+
+
+
+          // "width: 50%; margin-left: 50%; "
+
+
+          // start time will determine 'column' spacing
+
+
+          // array -  start before & end before (non-collisions) [e.g.  1 of theses ]
+            // (c) spacing from top (1 * 191 + px)
+          // array - start before & end during or after, will determine
+            // (a) SPACING from left [3+1]
+            // (b) WIDTH [100/ 3 + 1 (+ 1 self)] = num%
+            // (c) spacing from top (half spacing) ((3 *  191)/2) + 191 (see above c)
+          // array - start at same time & end during or after
+            // (b) WIDTH
+            // (a) SPACING FROM LEFT - if index is less than current index
+          // array - start during & end during or after
+            // (b) will determing WIDTH
+          // array - start after & end after (non-collisions)
+              // ignore these
+
+
+
+          // var beginningTime = moment('8:45am', 'h:mma');
+          // var endTime = moment('9:00am', 'h:mma');
+          // console.log(beginningTime.isBefore(endTime)); // true
+          // console.log(beginningTime.toDate()); // Mon May 12 2014 08:45:00
+          // console.log(endTime.toDate()); // Mon May 12 2014 09:00:00
+
+
+
+
+
+
+          //event.calcedStyles = "width: 50%; margin-left: 50%; height: 191px;";
+
 
           return event;
         });
@@ -33,38 +148,38 @@
       };
       $scope.initialRecordsData =  [
         {
-          eventTitle: "Alfreds Futterkiste",
+          eventTitle: "Breakfast",
           description: "There was Eru, the One, who in Arda is called Ilúvatar; and he made first the Ainur, the Holy Ones, that were the offspring of his thought, and they were with him before aught else was made. And he spoke to them, propounding to them themes of music; and they sang before him, and he was glad.",
           startTime: "11:30am",
-          endTime: "2:00pm",
+          endTime: "1:00pm",
           location: 'Gym'
         },
         {
-          eventTitle: "Alfreds Futterkiste",
+          eventTitle: "Lunch",
           description: "There was Eru, the One, who in Arda is called Ilúvatar; and he made first the Ainur, the Holy Ones, that were the offspring of his thought, and they were with him before aught else was made. And he spoke to them, propounding to them themes of music; and they sang before him, and he was glad.",
           startTime: "11:45am",
           endTime: "1:00pm"
         },
         {
-          eventTitle: "Call Prince",
+          eventTitle: "Tea (Afternoon)",
           description: "There was Eru, the One, who in Arda is called Ilúvatar; and he made first the Ainur, the Holy Ones, that were the offspring of his thought, and they were with him before aught else was made. And he spoke to them, propounding to them themes of music; and they sang before him, and he was glad.",
           startTime: "12:00pm",
           endTime: "12:15pm"
         },
         {
-          eventTitle: "Berglunds snabbköp",
+          eventTitle: "Dinner",
           description: "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole, filled with the ends of worms and an oozy smell, nor yet a dry, bare, sandy hole with nothing in it to sit down on or to eat: it was a hobbit-hole, and that means comfort.",
           startTime: "1:15pm",
           endTime: "2:13pm"
         },
         {
-          eventTitle: "Centro comercial Moctezuma",
+          eventTitle: "After Dinner Snack",
           description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec fringilla turpis nec consectetur vestibulum. Duis ipsum enim, sagittis nec lorem in, blandit sodales ex. Aliquam finibus bibendum scelerisque. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Maecenas luctus lorem eu laoreet pellentesque. Aenean et feugiat nulla. Sed a elit consequat, ornare erat a, tincidunt lacus. Donec mattis mauris sem, mattis lacinia massa ornare vitae. Donec convallis, felis eget sagittis molestie, tortor nulla volutpat purus, sit amet aliquam neque velit eu ipsum. Nullam quis vulputate ipsum. In suscipit felis mauris, vitae sodales arcu mattis in. Vestibulum eu varius mi, at scelerisque nulla. Nam rutrum velit tempor, vulputate eros quis, facilisis diam. Fusce commodo aliquam sollicitudin. Etiam sed nisi malesuada, volutpat arcu ut, tincidunt neque.",
           startTime: "3:45pm",
           endTime: "5:01pm"
         },
         {
-          eventTitle: "Ernst Handel",
+          eventTitle: "Late Night Bite",
           description: "When the Valar entered into Eä they were at first astounded and at a loss, for it was as if naught was yet made which they had seen in vision, and all was but on point to begin and yet unshaped, and it was dark. For the Great Music had been but the growth and flowering of thought in the Tuneless Halls, and the Vision only a foreshowing; but now they had entered in at the beginning of Time, and the Valar perceived that the World had been but foreshadowed and foresung, and they must achieve it. So began their great labours in wastes unmeasured and unexplored, and in ages uncounted and forgotten, until in the Deeps of Time and in the midst of the vast halls of Eä there came to be that hour and that place where was made the habitation of the Children of Ilúvatar.",
           startTime: "9:00pm",
           endTime: "10:00pm"
